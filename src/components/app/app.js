@@ -25,6 +25,7 @@ export default class App extends Component {
       important: false,
       done: false,
       id: this.itemId++,
+      filtered: true,
     };
   }
 
@@ -115,6 +116,61 @@ export default class App extends Component {
     });
   };
 
+  searchSymbol = (text) => {
+    const filterArr = this.state.todoData.filter((el) => {
+      return el.label.toLowerCase().indexOf(text.toLowerCase()) > -1;
+    });
+    this.setState(({ todoData }) => {
+      const cloneArr = [...todoData];
+      cloneArr.forEach((el) => {
+        if (filterArr.includes(el)) {
+          el.filtered = true;
+        } else {
+          el.filtered = false;
+        }
+      });
+      return {
+        todoData: cloneArr,
+      };
+    });
+  };
+
+  showAll = () => {
+    this.searchSymbol("");
+  };
+
+  showDone = () => {
+    this.setState(({todoData}) => {
+      const newArr = [...todoData];
+      newArr.forEach((el) => {
+        if (el.done) {
+          el.filtered = true
+        } else {
+          el.filtered = false
+        }
+      })
+      return {
+        todoData: newArr,
+      }
+    })
+  }
+
+  showActive = () => {
+    this.setState(({todoData}) => {
+      const newArr = [...todoData];
+      newArr.forEach((el) => {
+        if (!el.done) {
+          el.filtered = true
+        } else {
+          el.filtered = false
+        }
+      })
+      return {
+        todoData: newArr,
+      }
+    })
+  }
+
   render() {
     const doneCount = this.state.todoData.filter((el) => el.done).length;
     const todoCount = this.state.todoData.length - doneCount;
@@ -122,8 +178,12 @@ export default class App extends Component {
       <div className="todo-app">
         <AppHeader toDo={todoCount} done={doneCount} />
         <div className="top-panel d-flex">
-          <SearchPanel />
-          <ItemStatusFilter />
+          <SearchPanel onSymbolTyping={this.searchSymbol} />
+          <ItemStatusFilter 
+            filterAll={this.showAll}
+            filterActive={this.showActive}
+            filterDone={this.showDone}
+          />
         </div>
         <TodoList
           todos={this.state.todoData}
